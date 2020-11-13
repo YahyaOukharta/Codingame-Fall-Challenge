@@ -35,3 +35,24 @@ else
             execute get_tier1 procedure abs(d1) times 
         if d0 < 0: 
             execute get_tier0 procedure abs(d0) times 
+
+
+- count number of turns required for a potion
+
+tier3 = 4 turns + rest
+tier2 = 3 turns + rest
+tier1 = 2 turns + rest
+ tier0 = 1 turn + rest
+
+turns = 0
+for d in delta:
+    loop over tiers in reverse: 
+        turns += tier + 2
+
+- target best potion: find out if it will take the enemy less turns : if so target to the next best potion
+
+- update get_tier function as they will look for the best spell combination to make that tier
+- learn spells if a spell will allow get_tier function to finish in less turns
+
+
+- https://www.geeksforgeeks.org/generate-a-combination-of-minimum-coins-that-results-to-a-given-value/

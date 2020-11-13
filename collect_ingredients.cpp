@@ -65,3 +65,16 @@ string gather_ingredients(int inv[4], Action potion, vector<Action> spells)
     }
     return ("REST");
 }
+
+int count_turns_required(int inv[4], Action potion)
+{
+    int *delta;
+    int sum = 0;
+    delta = delta_add(inv, potion.delta);
+    for (int i =3; i>=0; i--)
+    {
+        if (delta[i] < 0)
+            sum += (i + 2)*abs(delta[i]);
+    }
+    return (sum);
+}
