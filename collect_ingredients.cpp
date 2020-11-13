@@ -4,7 +4,6 @@
 #include <algorithm>
 
 using namespace std;
-# define ABS(x) (x < 0 : -x : x)
 class Action
 {
     public:
@@ -60,7 +59,7 @@ string gather_ingredients(int inv[4], Action potion, vector<Action> spells)
     {
         if (delta[i] < 0)
         {
-            return (get_tier(inv, i, ABS(delta[i]) ,spells) );
+            return (get_tier(inv, i, abs(delta[i]) ,spells) );
         }
         i--;
     }
