@@ -54,5 +54,6 @@ for d in delta:
 - update get_tier function as they will look for the best spell combination to make that tier
 - learn spells if a spell will allow get_tier function to finish in less turns
 
+- must be able to compare BREW actions ???? most profitable ?  2 turns 8 rupees vs 4 turns for 20 rupees // (rupees per turn)
 
 - https://www.geeksforgeeks.org/generate-a-combination-of-minimum-coins-that-results-to-a-given-value/
