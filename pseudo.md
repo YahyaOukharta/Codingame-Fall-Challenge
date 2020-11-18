@@ -49,11 +49,14 @@ for d in delta:
     loop over tiers in reverse: 
         turns += tier + 2
 
+
+
 - target best potion: find out if it will take the enemy less turns : if so target to the next best potion
 
 - update get_tier function as they will look for the best spell combination to make that tier
 - learn spells if a spell will allow get_tier function to finish in less turns
 
-- must be able to compare BREW actions ???? most profitable ?  2 turns 8 rupees vs 4 turns for 20 rupees // (rupees per turn)
+- must be able to compare BREW actions ???? most profitable ?  
+- 2 turns 8 rupees vs 4 turns for 20 rupees // (rupees per turn)
 
 - https://www.geeksforgeeks.org/generate-a-combination-of-minimum-coins-that-results-to-a-given-value/
