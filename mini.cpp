@@ -167,7 +167,6 @@ class State
                 return (1);
             return (0);
         }
-
         int state_score()
         {
             return (score - enemy_score);
