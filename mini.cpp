@@ -37,7 +37,9 @@ int *delta_add(int d1[4], int d2[4])
 
 bool is_brewable(int inv[4], Action potion)
 {
-    int *d = delta_add(inv, potion.delta);
+    int *d;
+    cerr << inv <<endl;
+    d = delta_add(inv, potion.delta);
     for (int i = 0; i < 4; i++)
     {
         if (d[i] < 0)
@@ -84,11 +86,12 @@ bool is_learnable(int inv[4], Action learn_spell)
     return(true);
 }
 
-Action *get_action_with_id(vector<Action> actions, int id)
+int indexof_action_with_id(vector<Action> actions, int id)
 {
-    for (auto a : actions)
-        if (a.actionId == id)
-            return(&a);
+    for (int i = 0; i < actions.size(); i++)
+        if (actions[i].actionId == id)
+            return(i);
+    return (-1);
 }
 
 int inv_size(int inv[4])
@@ -174,15 +177,15 @@ class State
         
         void set_spell_castability(vector<Action> sps, int id, bool castable)
         {
-            Action *s = get_action_with_id(sps, id);
-            s->castable = castable;
+            int index = indexof_action_with_id(sps, id);
+            sps[index].castable = castable;
         }
 
-        vector<Action> get_possible_player_moves()
+        vector<Action> get_possible_player_moves() //todo : add rest
         {
             vector<Action> moves; 
             for (auto p : potions)
-                if(is_brewable(inv, p)) moves.push_back(p);
+                if (is_brewable(inv, p)) moves.push_back(p);
             for (auto s : spells)
                 if (is_castable(inv, s)) moves.push_back(s);
             for (auto ls : learn_spells)
@@ -298,6 +301,8 @@ class State
             cerr << "Enemy spells : " << endl << actions_to_string(enemy_spells) << endl;
             cerr << "Learn spells : " << endl << actions_to_string(learn_spells) << endl;
             cerr << "Potions : " << endl << actions_to_string(potions) << endl;
+
+            
         }
 
         vector<State> get_children() //compute all possible moves and apply them to the current state and return
@@ -313,7 +318,6 @@ int     minimax(State s, int depth, bool maximizing)
 {
     if (depth == 0 || s.game_over())
         return (s.state_score());
-
     if (maximizing)
     {
         int max_score = -500; //min score achievable  (max_potion_score * 6)
