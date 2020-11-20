@@ -2,8 +2,12 @@
 #include <string>
 #include <vector>
 #include <algorithm>
-
+#include <queue>
+#include <tuple>
+#include <unordered_set>
+#include <chrono>
 using namespace std;
+using namespace std::chrono;
 
 # define min(a,b) (a < b ? a : b)
 
@@ -44,8 +48,35 @@ int *delta_add(int d1[4], int d2[4])
     return (d);
 }
 
+int *delta_add2(int d1[4], int d2[4])
+{
+    d1[0] += d2[0];
+    d1[1] += d2[1];
+    d1[2] += d2[2];
+    d1[3] += d2[3];
+    return (d1);
+}
+
 bool is_valid_action(int d[4])
 {
+    for (int i = 0; i < 4; i++)
+    {
+        if (d[i] < 0)
+            return(false);
+    }
+    int s = 0;
+    for (int i = 0; i < 4; i++)
+    {
+        s += d[i];
+        if (s > 10)
+            return false;
+    }
+    return(true);
+}
+bool is_valid_action2(int d[4],int d2[4])
+{
+    for (int i = 0; i < 4; i++)
+        d[i]+=d2[i];
     for (int i = 0; i < 4; i++)
     {
         if (d[i] < 0)
@@ -300,8 +331,117 @@ string get_learn_spell(int inv[4], vector<Action> spells, vector<Action> learn_s
     }
     return "";
 }
+bool done_searching(int *d)
+{
+    for (int i = 0; i < 4; i++) if (d[i]< 0) return(false);
+    return(true);
+}
+
+int delta2int(int d[4])
+{
+    int r = 0;
+    r = d[0];
+    r = r * 11 +d[1];
+    r = r * 11 +d[2];
+    r = r * 11 +d[3];
+    return(r);
+}
+
+vector<Action> get_spell_comb(vector<Action> spells, Action potion, int *inv)
+{
+    int *diff = delta_add(inv,potion.delta);
+    queue < tuple<int*, vector<Action> > > q;
+
+    q.push({diff, {}});
+
+    unordered_set<int*> visited;
+    int nodes = 0;
+
+    while (q.size() && nodes < 5000)
+    {
+        int s = q.size();
+        while (s--)
+        {
+            auto front = q.front();
+            int* current_sum = get<0>(front);
+            vector<Action> path = get<1>(front);
+            if (done_searching(current_sum))
+            {
+               cerr << "nodes visited : "<< nodes<< endl; 
+                return (path);}
+            q.pop();
+            if (visited.find(current_sum) != visited.end())
+            {   cerr << "visited"<< endl; 
+                continue;
+            }
+            visited.insert(current_sum);
+            for (int i = 0; i < spells.size(); i++)
+            {   nodes++;
+                vector<Action> tmp = path;
+                tmp.push_back(spells[i]);
+                cerr << spells[i].actionId << endl;
+                q.push({delta_add(current_sum, spells[i].delta), tmp});
+            }
+        }
+    }
+    return ((vector<Action>){});
+}
+string get_spellid_comb(vector<Action> spells, Action potion, int *inv)
+{
+    int *diff = delta_add(inv,potion.delta);
+    queue < tuple<int*, string > > q;
+
+    q.push({diff, ""});
+
+    unordered_set<int> visited;
+    int nodes = 0;
+    cerr << "in" << endl;
+    while (q.size() )
+    {
+        int s = q.size();
+        //cerr << "q size " << s << endl;
+
+        while (s-- )
+        {
+            if (nodes > 40000)
+            {
+                cerr << "nodes visited : "<< nodes<< endl; 
+                return ("");
+            }
+            auto front = q.front();
+            int* current_sum = get<0>(front);
+            string path = get<1>(front);
+            if (done_searching(current_sum))
+            {
+                cerr << "nodes visited : "<< nodes<< endl; 
+                return (path);
+            }
+            q.pop();
+            if (visited.find(delta2int(current_sum)) != visited.end())
+                continue;
+            visited.insert(delta2int(current_sum));
+            for (int i = 0; i < spells.size(); i++)
+            {   nodes++;
+                string tmp = path;
+                //cerr << spells[i].actionId << endl;
+                tmp += (char)spells[i].actionId;
+                q.push({delta_add(current_sum, spells[i].delta), tmp});
+            }
+        }
+    }
+    return ("");
+}
+vector <Action> get_castable(vector<Action> spells)
+{
+    vector<Action> castable;
+
+    for (auto s : spells)
+        if(s.castable) castable.push_back(s);
+    return (castable);
+}
 
 int turn = 0;
+string path = "";
 string Brain(int inv[4], int enemy_inv[4], vector<Action> potions, vector<Action> spells, vector<Action> enemy_spells, vector<Action> learn_spells)
 {
     Action target;
@@ -324,18 +464,54 @@ string Brain(int inv[4], int enemy_inv[4], vector<Action> potions, vector<Action
             }
         } 
     }
-    else
-        target = get_action_from_id(potions, targetId);
+    
+    target = get_action_from_id(potions, targetId);
+    //target = potions[2];
 
     cerr << "Target ID : " << targetId << ", Price : " << target.price << "  fir:"<<spells[0].actionId<< endl;
-    
-    int max_spells = 8;
+
+    vector<Action> c = get_castable(spells);
+
+    //vector<Action> comb;
+    //string comb;
+    auto start = high_resolution_clock::now();
+    if(turn > 20)
+    {
+        if (path == "")
+            path = get_spellid_comb(c,target,inv);
+        if (path.size())
+        {
+            for (auto s : path)
+            {
+                cerr << " "<< (int)s;
+                cerr << endl;
+            }
+        
+            for (int i = 0; i < path.size();i++)
+            {   Action sp = get_action_from_id(spells, (int)path[i]);
+                if (sp.castable && is_valid_action2(sp.delta, inv))
+                {
+                    cerr << "chosen = "<<(int)path[i]<<endl;
+                    path.erase(i, 1); 
+                    return(sp.execute_action()); 
+                }
+            }
+        }
+    }
+    auto stop = high_resolution_clock::now(); 
+
+    auto duration = duration_cast<microseconds>(stop - start).count() / (float)1000; 
+    cerr<<duration<<" ms"<<endl;
+
+
+    int max_spells = 10;
     string s = get_learn_spell(inv, spells, learn_spells, max_spells);
     if (s!="")
         return(s);
 
     return (gather_ingredients(inv, target, spells, -1,ori));
 }
+
 
 
 int main()
@@ -365,7 +541,7 @@ int main()
             if (act.actionType == "CAST")
                 spells.push_back(act);
             if (act.actionType == "OPPONENT_CAST")
-               enemy_spells.push_back(act);
+                enemy_spells.push_back(act);
             if (act.actionType == "LEARN")
                 learn_spells.push_back(act);
         }
@@ -380,6 +556,8 @@ int main()
       
 
         // in the first league: BREW <id> | WAIT; later: BREW <id> | CAST <id> [<times>] | LEARN <id> | REST | WAIT
+        
+
         cout << Brain(inv,enemy_inv,potions,spells,enemy_spells,learn_spells) << endl;
         turn ++;
     }

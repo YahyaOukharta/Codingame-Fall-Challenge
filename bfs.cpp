@@ -30,7 +30,7 @@ vector<int> minNumbers(int x, int*arr, int n)
                 return path;
             
             q.pop();
-            if (v.find(current_sum) != v.end() or current_sum < 0) // already visited or negative number //
+            if (v.find(current_sum) != v.end() )//or current_sum < 0) // already visited or negative number //
                 continue;
             v.insert(current_sum);
             for(int i = 0; i < n; i++)
@@ -47,9 +47,9 @@ vector<int> minNumbers(int x, int*arr, int n)
 
 int main()
 {
-    int arr[] = {1,2,2,2,2,2};
+    int arr[] = {-2,7,6};
     int n = sizeof(arr) / sizeof(int);
-    int x = 80;
+    int x = -5;
 
     // cout << minNumbers(x,arr,n)<<endl;
     for (auto c : minNumbers(x,arr,n))
